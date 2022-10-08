@@ -6,7 +6,7 @@
 
 ![Overview image](overview.png)
 
-This is a bike POV display using widely available parts.
+This is a bike POV display using readily available parts.
 
 ## Dependencies
 
@@ -21,8 +21,8 @@ Below is a full bill of materials with German sources for all non-printable part
 
 | Quantity: | Item: | Source: |
 | --- | --- | --- |
-| 1 | Battery holder | [Amazon](https://www.amazon.de/Batteriehalter-Mignon-Akkuhalter-Batteriefach-Schalter-3x-AA/dp/B0761VWZCX) |
-| 1 | LED strip | [Amazon](https://www.amazon.de/CHINLY-Individuell-adressierbar-Traumfarbe-Wasserdicht/dp/B07TLHHJ75) |
-| 1 | Cable ties | [Amazon](https://www.amazon.de/Hipeqia-Nylon-Kabelbinder-Kabelbinderhalter-Selbstklebend-Hitzebest%C3%A4ndig/dp/B08CL2JFCH) |
-| 1 | MPU-6050 | [Amazon](https://www.amazon.de/AZDelivery-MPU-6050-3-Achsen-Gyroskop-Beschleunigungssensor-Arduino/dp/B07TKLYBD6) |
 | 1 | ESP32 | [Amazon](https://www.amazon.de/AZDelivery-NodeMCU-Development-Nachfolgermodell-ESP8266/dp/B074RGW2VQ) |
+| 1 | LED strip | [Amazon](https://www.amazon.de/CHINLY-Individuell-adressierbar-Traumfarbe-Wasserdicht/dp/B07TLHHJ75) |
+| 1 | MPU-6050 | [Amazon](https://www.amazon.de/AZDelivery-MPU-6050-3-Achsen-Gyroskop-Beschleunigungssensor-Arduino/dp/B07TKLYBD6) |
+| 1 | USB power bank | [Amazon](https://www.amazon.de/Intenso-Powerbank-Ladeger%C3%A4t-Smartphone-Digitalkamera-schwarz/dp/B07Z6N28RD) |
+| 1 | Cable ties | [Amazon](https://www.amazon.de/Kabelbinder-Rscolila-Hochleistungs-Kabelmanagement-300mmx5mm/dp/B08ZC7PBSD) |
