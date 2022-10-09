@@ -1,5 +1,6 @@
 'use strict';
 
+// DOM references
 let internalWheelDiameterInput = document.getElementById('internal-wheel-diameter');
 let hubDiameterInput = document.getElementById('hub-diameter');
 let imageInput = document.getElementById('image');
@@ -11,10 +12,12 @@ let bkpvdsplyContext = bkpvdsplyCanvas.getContext('2d');
 let uploadButton = document.getElementById('upload');
 let progressLabel = document.getElementById('progress');
 
+// LED related constants
 const LED_STRIP_LENGTH = 225;
 const LED_COUNT = 32;
 const LED_SPACING = LED_STRIP_LENGTH / LED_COUNT;
 
+// Other variables
 let internalWheelDiameter = 600;
 let hubDiameter = 80;
 let margin = ((internalWheelDiameter / 2) - (hubDiameter / 2) - LED_STRIP_LENGTH) / 2;
@@ -24,6 +27,7 @@ for (let i = 0; i < bkpvdsplyImage.length; i++) {
     bkpvdsplyImage[i] = new Array(3);
 }
 
+// Function to upload the image angle by angle
 async function uploadImage(image) {
     for (let i = 0; i < 360; i++) {
         let data = new URLSearchParams();
@@ -53,6 +57,7 @@ async function uploadImage(image) {
     return true;
 }
 
+// Handle convert button
 convertButton.addEventListener('click', () => {
     if (imageInput.files[0]) {
         internalWheelDiameter = parseInt(internalWheelDiameterInput.value);
@@ -63,18 +68,19 @@ convertButton.addEventListener('click', () => {
         alert('Please select an image before converting it.');
     }
 });
-
+// Handle image load
 originalImage.addEventListener('load', () => {
+    // Update canvas size
     originalCanvas.width = internalWheelDiameter;
     originalCanvas.height = internalWheelDiameter;
     bkpvdsplyCanvas.width = internalWheelDiameter;
     bkpvdsplyCanvas.height = internalWheelDiameter;
-
+    // Draw original image
     originalContext.drawImage(originalImage, 0, 0, internalWheelDiameter, internalWheelDiameter);
-
+    // Draw bkpvdsply background
     bkpvdsplyContext.fillStyle = '#000000';
     bkpvdsplyContext.fillRect(0, 0, internalWheelDiameter, internalWheelDiameter);
-
+    // Draw bkpvdsply image and store the data for upload
     for (let i = 0; i < 360; i++) {
         for (let j = 0; j < LED_COUNT; j++) {
             let x = Math.round((internalWheelDiameter / 2) + (((hubDiameter / 2) + margin + (LED_SPACING / 2) + (j * LED_SPACING)) * Math.cos((i - 90) * (Math.PI / 180.0))));
@@ -89,7 +95,7 @@ originalImage.addEventListener('load', () => {
     }
     URL.revokeObjectURL(this.src);
 });
-
+// Handle upload button
 uploadButton.addEventListener('click', () => {
     if (bkpvdsplyImage[0] !== undefined) {
         alert('Please be patient, the upload will take about 2 minutes.');
