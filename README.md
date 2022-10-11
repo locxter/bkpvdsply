@@ -17,6 +17,8 @@ I generally try to minimize dependencies, but I'm a one man crew and can therefo
 
 ## How to build it
 
+![Assembly image](cad/assembly.png)
+
 Below is a full bill of materials with German sources for all non-printable parts:
 
 | Quantity: | Item: | Source: |
