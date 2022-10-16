@@ -15,7 +15,7 @@ I generally try to minimize dependencies, but I'm a one man crew and can therefo
 - Arduino IDE as a way to compile the Arduino code. Install it with `sudo apt install arduino`.
 - Arduino ESP32 LittleFS uploader for uploading the data. Install it via the [installation guide](https://github.com/lorol/arduino-esp32fs-plugin).
 - Adafruit NeoPixel library for controlling the LEDs. Install it via the integrated library manager.
-- MPU6050_tocken for communicating with the gyroscope. Install it via the integrated library manager.
+- MPU6050_tockn library for communicating with the gyroscope. Install it via the integrated library manager.
 
 ## How to build it
 
