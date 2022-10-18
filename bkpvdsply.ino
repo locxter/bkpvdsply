@@ -17,7 +17,7 @@ const IPAddress IP(192, 168, 0, 1);
 
 // MPU, NeoPixel and server objects
 MPU6050 mpu(Wire);
-Adafruit_NeoPixel neopixels(LED_COUNT, NEOPIXELS_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel neopixels(LED_COUNT * 4, NEOPIXELS_PIN, NEO_GRB + NEO_KHZ800);
 DNSServer dns;
 WebServer server(80);
 
@@ -39,7 +39,8 @@ void setup() {
     // Initiliaze NeoPixels
     neopixels.begin();
     neopixels.clear();
-    // Initialize filesystem 
+    neopixels.show();
+    // Initialize filesystem
     LittleFS.begin();
     loadImage();
     // Initialize WiFi network
@@ -80,7 +81,7 @@ void setup() {
             }
             hasArgs = server.hasArg("led-" + String(i) + "-b");
         }
-        // Extract and store the received data  
+        // Extract and store the received data
         if (hasArgs) {
             int angle = server.arg("angle").toInt();
             File file;
@@ -138,13 +139,25 @@ void loop() {
         }
         lastRotation = currentMillis;
     }
-    // Display a angle of the image
+    // Display an angle of the image
     if (!isPaused && currentMillis - lastAngle > round(revolutionPeriod / 360.0)) {
         for (int i = 0; i < LED_COUNT; i++) {
             byte r = image[(virtualAngle * LED_COUNT) + i][0];
             byte g = image[(virtualAngle * LED_COUNT) + i][1];
             byte b = image[(virtualAngle * LED_COUNT) + i][2];
             neopixels.setPixelColor(i, neopixels.Color(r, g, b));
+            r = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][0];
+            g = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][1];
+            b = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][2];
+            neopixels.setPixelColor(i + LED_COUNT, neopixels.Color(r, g, b));
+            r = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][0];
+            g = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][1];
+            b = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][2];
+            neopixels.setPixelColor(i + (LED_COUNT * 2), neopixels.Color(r, g, b));
+            r = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][0];
+            g = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][1];
+            b = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][2];
+            neopixels.setPixelColor(i + (LED_COUNT * 3), neopixels.Color(r, g, b));
         }
         neopixels.show();
         lastAngle = currentMillis;
