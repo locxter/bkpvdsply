@@ -108,7 +108,7 @@ void setup() {
     });
     server.serveStatic("/data/image.csv", LittleFS, "/data/image.csv");
     server.serveStatic("/scripts/index.js", LittleFS, "/scripts/index.js");
-    server.serveStatic("/styles/water.min.css", LittleFS, "/styles/water.min.css");
+    server.serveStatic("/styles/dark.min.css", LittleFS, "/styles/dark.min.css");
     server.onNotFound([&]() {
         server.send(404, "text/plain", "Resource not found");
     });

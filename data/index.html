@@ -1,79 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>
-            bkpvdsply
-        </title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="author" content="locxter">
-        <meta name="description" content="This is a bike POV display using readily available parts.">
-        <link rel="stylesheet" href="styles/water.min.css">
-    </head>
-    <body>
-        <noscript>
-            <h1>
-                Enable JavaScript to use this site.
-            </h1>
-        </noscript>
-        <header>
-            <h1>
-                bkpvdsply
-            </h1>
-        </header>
-        <main>
-            <p>
-                <label for="internal-wheel-diameter">
-                    Internal wheel diameter in mm:
-                </label>
-                <br>
-                <input id="internal-wheel-diameter" type="number" min="0" max="1000" value="600">
-            </p>
-            <p>
-                <label for="hub-diameter">
-                    Hub diameter in mm:
-                </label>
-                <br>
-                <input id="hub-diameter" type="number" min="0" max="100" value="80">
-            </p>
-            <p>
-                <label for="image">
-                    Image:
-                </label>
-                <br>
-                <input id="image" type="file" accept="image/*">
-            </p>
-            <p>
-                <button id="convert">
-                    Convert image
-                </button>
-            </p>
-            <p>
-                Original image:
-                <br>
-                <canvas id="original">
-                </canvas>
-            </p>
-            <p>
-                bkpvdsply image:
-                <br>
-                <canvas id="bkpvdsply">
-                </canvas>
-            </p>
-            <p>
-                <button id="upload">
-                    Upload image to bkpvdsply
-                </button>
-            </p>
-            <p id="progress">
-            </p>
-        </main>
-        <footer>
-            <p>
-                2022 locxter
-            </p>
-        </footer>
-        <script src="scripts/index.js">
-        </script>
-    </body>
+  <head>
+    <title>
+      bkpvdsply
+    </title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="locxter">
+    <meta name="description" content="This is a bike POV display using readily available parts.">
+    <link rel="stylesheet" href="styles/dark.min.css">
+  </head>
+  <body>
+    <noscript>
+      <h1>
+        Enable JavaScript to use this site.
+      </h1>
+    </noscript>
+    <header>
+      <h1>
+        bkpvdsply
+      </h1>
+    </header>
+    <main>
+      <p>
+        <label for="internal-wheel-diameter">
+          Internal wheel diameter in mm:
+        </label>
+        <br>
+        <input id="internal-wheel-diameter" type="number" min="0" max="1000" value="600">
+      </p>
+      <p>
+        <label for="hub-diameter">
+          Hub diameter in mm:
+        </label>
+        <br>
+        <input id="hub-diameter" type="number" min="0" max="100" value="80">
+      </p>
+      <p>
+        <label for="image">
+          Image:
+        </label>
+        <br>
+        <input id="image" type="file" accept="image/*">
+      </p>
+      <p>
+        <button id="convert">
+          Convert image
+        </button>
+      </p>
+      <p>
+        Original image:
+        <br>
+        <canvas id="original">
+        </canvas>
+      </p>
+      <p>
+        bkpvdsply image:
+        <br>
+        <canvas id="bkpvdsply">
+        </canvas>
+      </p>
+      <p>
+        <button id="upload">
+          Upload image to bkpvdsply
+        </button>
+      </p>
+      <p id="progress">
+      </p>
+    </main>
+    <footer>
+      <p>
+        2022 locxter
+      </p>
+    </footer>
+    <script src="scripts/index.js">
+    </script>
+  </body>
 </html>
