@@ -23,8 +23,12 @@ WebServer server(80);
 
 // Other variables
 byte image[360 * LED_COUNT][3];
-unsigned long currentMillis = 0, revolutionPeriod = 0, lastRotation = 0, lastAngle = 0;
-int angle = 0, virtualAngle = 0;
+unsigned long currentMillis = 0;
+unsigned long revolutionPeriod = 0;
+unsigned long lastRotation = 0;
+unsigned long lastAngle = 0;
+int angle = 0;
+int virtualAngle = 0;
 bool isPaused = true;
 
 // Function to load the image from the filesystem into memory
