@@ -23,12 +23,13 @@ WebServer server(80);
 
 // Other variables
 byte image[360 * LED_COUNT][3];
-unsigned long currentMillis = 0;
+unsigned long currentMicros = 0;
 unsigned long revolutionPeriod = 0;
 unsigned long lastRotation = 0;
 unsigned long lastAngle = 0;
 int angle = 0;
 int virtualAngle = 0;
+bool isReceiving = false;
 bool isPaused = true;
 
 // Function to load the image from the filesystem into memory
@@ -90,6 +91,9 @@ void setup() {
             int angle = server.arg("angle").toInt();
             File file;
             if (angle == 0) {
+                neopixels.clear();
+                neopixels.show();
+                isReceiving = true;
                 file = LittleFS.open("/data/image.csv", "w");
                 file.print("R:, G:, B:\n");
             } else {
@@ -105,6 +109,9 @@ void setup() {
                 image[(angle * LED_COUNT) + i][2] = b;
             }
             file.close();
+            if (angle == 359) {
+                isReceiving = false;
+            }
             server.send(200);
         } else {
             server.send(404, "text/plain", "Invalid request");
@@ -117,55 +124,58 @@ void setup() {
         server.send(404, "text/plain", "Resource not found");
     });
     server.begin();
-    lastRotation = millis();
+    lastRotation = micros();
 }
 
 // Main function
 void loop() {
-    mpu.update();
-    angle = ((int) round(mpu.getAccAngleX()) + 360) % 360;
-    currentMillis = millis();
-    // Calculate revolution period and update other data on every rotation when the user is pedalling
-    if ((angle > 354 || angle < 6) && currentMillis - lastRotation > 200 && currentMillis - lastRotation < 2000) {
-        if (isPaused) {
-            isPaused = false;
+    if (!isReceiving) {
+        mpu.update();
+        angle = ((int) round(mpu.getAccAngleX()) + 360) % 360;
+        currentMicros = micros();
+        // Calculate revolution period and update other data on every rotation when the user is pedalling
+        if ((angle > 354 || angle < 6) && currentMicros - lastRotation > 200000 && currentMicros - lastRotation < 2000000) {
+            if (isPaused) {
+                isPaused = false;
+            }
+            revolutionPeriod = currentMicros - lastRotation;
+            lastRotation = currentMicros;
+            lastAngle = currentMicros;
+            virtualAngle = 0;
         }
-        revolutionPeriod = currentMillis - lastRotation;
-        lastRotation = currentMillis;
-        lastAngle = currentMillis;
-        virtualAngle = 0;
-    }
-    // Pause display when user stops pedalling
-    if (currentMillis - lastRotation > 2000) {
-        if (!isPaused) {
-            neopixels.clear();
-            isPaused = true;
+        // Pause display when user stops pedalling
+        if (currentMicros - lastRotation > 2000000) {
+            if (!isPaused) {
+                neopixels.clear();
+                neopixels.show();
+                isPaused = true;
+            }
+            lastRotation = currentMicros;
         }
-        lastRotation = currentMillis;
-    }
-    // Display an angle of the image
-    if (!isPaused && currentMillis - lastAngle > round(revolutionPeriod / 360.0)) {
-        for (int i = 0; i < LED_COUNT; i++) {
-            byte r = image[(virtualAngle * LED_COUNT) + i][0];
-            byte g = image[(virtualAngle * LED_COUNT) + i][1];
-            byte b = image[(virtualAngle * LED_COUNT) + i][2];
-            neopixels.setPixelColor(i, neopixels.Color(r, g, b));
-            r = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][0];
-            g = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][1];
-            b = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][2];
-            neopixels.setPixelColor(i + LED_COUNT, neopixels.Color(r, g, b));
-            r = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][0];
-            g = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][1];
-            b = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][2];
-            neopixels.setPixelColor(i + (LED_COUNT * 2), neopixels.Color(r, g, b));
-            r = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][0];
-            g = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][1];
-            b = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][2];
-            neopixels.setPixelColor(i + (LED_COUNT * 3), neopixels.Color(r, g, b));
+        // Display an angle of the image
+        if (!isPaused && currentMicros - lastAngle > round(revolutionPeriod / 360.0)) {
+            for (int i = 0; i < LED_COUNT; i++) {
+                byte r = image[(virtualAngle * LED_COUNT) + i][0];
+                byte g = image[(virtualAngle * LED_COUNT) + i][1];
+                byte b = image[(virtualAngle * LED_COUNT) + i][2];
+                neopixels.setPixelColor(i, neopixels.Color(r, g, b));
+                r = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][0];
+                g = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][1];
+                b = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][2];
+                neopixels.setPixelColor(i + LED_COUNT, neopixels.Color(r, g, b));
+                r = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][0];
+                g = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][1];
+                b = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][2];
+                neopixels.setPixelColor(i + (LED_COUNT * 2), neopixels.Color(r, g, b));
+                r = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][0];
+                g = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][1];
+                b = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][2];
+                neopixels.setPixelColor(i + (LED_COUNT * 3), neopixels.Color(r, g, b));
+            }
+            neopixels.show();
+            lastAngle = currentMicros;
+            virtualAngle = (virtualAngle + 1) % 360;
         }
-        neopixels.show();
-        lastAngle = currentMillis;
-        virtualAngle = (virtualAngle + 1) % 360;
     }
     dns.processNextRequest();
     server.handleClient();
