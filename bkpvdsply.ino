@@ -26,9 +26,9 @@ byte image[360 * LED_COUNT][3];
 unsigned long currentMicros = 0;
 unsigned long revolutionPeriod = 0;
 unsigned long lastRotation = 0;
-unsigned long lastAngle = 0;
 int angle = 0;
 int virtualAngle = 0;
+int lastVirtualAngle = -1;
 bool isReceiving = false;
 bool isPaused = true;
 
@@ -43,6 +43,7 @@ void setup() {
     mpu.calcGyroOffsets();
     // Initiliaze NeoPixels
     neopixels.begin();
+    neopixels.setBrightness(128);
     neopixels.clear();
     neopixels.show();
     // Initialize filesystem
@@ -134,17 +135,17 @@ void loop() {
         angle = ((int) round(mpu.getAccAngleX()) + 360) % 360;
         currentMicros = micros();
         // Calculate revolution period and update other data on every rotation when the user is pedalling
-        if ((angle > 354 || angle < 6) && currentMicros - lastRotation > 200000 && currentMicros - lastRotation < 2000000) {
+        if ((angle >= 353 || angle <= 7) && currentMicros - lastRotation >= 150000 && currentMicros - lastRotation <= 1500000) {
             if (isPaused) {
                 isPaused = false;
             }
             revolutionPeriod = currentMicros - lastRotation;
             lastRotation = currentMicros;
-            lastAngle = currentMicros;
             virtualAngle = 0;
+            lastVirtualAngle = -1;
         }
         // Pause display when user stops pedalling
-        if (currentMicros - lastRotation > 2000000) {
+        if (currentMicros - lastRotation > 1500000) {
             if (!isPaused) {
                 neopixels.clear();
                 neopixels.show();
@@ -152,29 +153,31 @@ void loop() {
             }
             lastRotation = currentMicros;
         }
-        // Display an angle of the image
-        if (!isPaused && currentMicros - lastAngle > round(revolutionPeriod / 360.0)) {
-            for (int i = 0; i < LED_COUNT; i++) {
-                byte r = image[(virtualAngle * LED_COUNT) + i][0];
-                byte g = image[(virtualAngle * LED_COUNT) + i][1];
-                byte b = image[(virtualAngle * LED_COUNT) + i][2];
-                neopixels.setPixelColor(i, neopixels.Color(r, g, b));
-                r = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][0];
-                g = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][1];
-                b = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][2];
-                neopixels.setPixelColor(i + LED_COUNT, neopixels.Color(r, g, b));
-                r = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][0];
-                g = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][1];
-                b = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][2];
-                neopixels.setPixelColor(i + (LED_COUNT * 2), neopixels.Color(r, g, b));
-                r = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][0];
-                g = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][1];
-                b = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][2];
-                neopixels.setPixelColor(i + (LED_COUNT * 3), neopixels.Color(r, g, b));
+        if (!isPaused) {
+            virtualAngle = (int) round((currentMicros - lastRotation) / (revolutionPeriod / 360.0)) % 360;
+            // Display an angle of the image
+            if (virtualAngle != lastVirtualAngle) {
+                for (int i = 0; i < LED_COUNT; i++) {
+                    byte r = image[(virtualAngle * LED_COUNT) + i][0];
+                    byte g = image[(virtualAngle * LED_COUNT) + i][1];
+                    byte b = image[(virtualAngle * LED_COUNT) + i][2];
+                    neopixels.setPixelColor(i, neopixels.Color(r, g, b));
+                    r = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][0];
+                    g = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][1];
+                    b = image[(((virtualAngle + 90) % 360) * LED_COUNT) + i][2];
+                    neopixels.setPixelColor(i + LED_COUNT, neopixels.Color(r, g, b));
+                    r = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][0];
+                    g = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][1];
+                    b = image[(((virtualAngle + 180) % 360) * LED_COUNT) + i][2];
+                    neopixels.setPixelColor(i + (LED_COUNT * 2), neopixels.Color(r, g, b));
+                    r = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][0];
+                    g = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][1];
+                    b = image[(((virtualAngle + 270) % 360) * LED_COUNT) + i][2];
+                    neopixels.setPixelColor(i + (LED_COUNT * 3), neopixels.Color(r, g, b));
+                }
+                neopixels.show();
+                lastVirtualAngle = virtualAngle;
             }
-            neopixels.show();
-            lastAngle = currentMicros;
-            virtualAngle = (virtualAngle + 1) % 360;
         }
     }
     dns.processNextRequest();
