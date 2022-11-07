@@ -2,8 +2,6 @@
 
 ## Overview
 
-> Please keep in mind that this is a **work in progress**.
-
 ![Overview image](overview.png)
 
 This is a bike POV display using readily available parts.
@@ -18,6 +16,10 @@ I generally try to minimize dependencies, but I'm a one man crew and can therefo
 - MPU6050_tockn library for communicating with the gyroscope. Install it via the integrated library manager.
 
 ## How to build it
+
+This project is relatively straight forward as it mainly consists of an ESP32, an LED strip that's slit into four segments, a MPU-6050 and an USB power bank all housed in 3D printed enclosures and mounted with cable ties. For inspiration take a look at the mounting and assembly image down below.
+
+![Mounting image](mounting.png)
 
 ![Assembly image](cad/assembly.png)
 
