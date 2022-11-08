@@ -33,3 +33,7 @@ Below is a full bill of materials with German sources for all non-printable part
 | 1 | MPU-6050 | [Amazon](https://www.amazon.de/AZDelivery-MPU-6050-3-Achsen-Gyroskop-Beschleunigungssensor-Arduino/dp/B07TKLYBD6) |
 | 1 | USB power bank | [Amazon](https://www.amazon.de/dp/B01N1UX5JR) |
 | 1 | Cable ties | [Amazon](https://www.amazon.de/Kabelbinder-Rscolila-Hochleistungs-Kabelmanagement-300mmx5mm/dp/B08ZC7PBSD) |
+
+## How to use it
+
+After turning on bkpvdsply and giving the ESP roughly half a minute to boot up, you can connect to the Wi-Fi network `bkpvdsply`, open any webpage (or `192.168.0.1` if the local DNS server doesn't work) and upload an image there. Then just hop on your bike and enjoy the glory of POV displays.
