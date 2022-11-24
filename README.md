@@ -36,4 +36,11 @@ Below is a full bill of materials with German sources for all non-printable part
 
 ## How to use it
 
-After turning on bkpvdsply and giving the ESP roughly half a minute to boot up, you can connect to the Wi-Fi network `bkpvdsply`, open any webpage (or `192.168.0.1` if the local DNS server doesn't work) and upload an image there. Then just hop on your bike and enjoy the glory of POV displays.
+1. Flash the sketch with the following settings:
+    - `Arduino Runs On: Core 0`
+    - `Events Run On: Core 1`
+    - `Partition Scheme: No OTA (1MB APP/3MB SPIFFS)`
+2. Upload the additional files via the Arduino ESP32 LittleFS uploader.
+3. After turning on bkpvdsply, give the ESP roughly half a minute to boot up.
+4. Connect to the Wi-Fi network `bkpvdsply`, open any webpage (or `192.168.0.1` if the local DNS server doesn't work) and upload an image.
+5. Then just hop on your bike and enjoy the glory of POV displays.

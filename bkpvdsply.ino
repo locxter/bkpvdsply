@@ -10,7 +10,7 @@
 
 // LED and WiFi related constants
 const int NEOPIXELS_PIN = 5;
-const int SLOT_COUNT = 2;
+const int STORAGE_SLOT_COUNT = 8;
 const int LED_COUNT = 32;
 const char* SSID = "bkpvdsply";
 const char* WIFI_PASSWORD = "bkpvdsply";
@@ -23,7 +23,7 @@ DNSServer dns;
 WebServer server(80);
 
 // Other variables
-byte images[SLOT_COUNT][360 * LED_COUNT][3];
+byte images[2][360 * LED_COUNT][3];
 unsigned long currentMicros = 0;
 unsigned long revolutionPeriod = 0;
 unsigned long lastRotation = 0;
@@ -31,18 +31,18 @@ unsigned long lastSlotChange = 0;
 unsigned long animationInterval = 1000000;
 int brightness = 128;
 int displayMode = 0;
-int currentSlot = 0;
+int currentMemorySlot = 0;
 int angle = 0;
 int virtualAngle = 0;
 int lastVirtualAngle = -1;
 bool isReceiving = false;
 bool isPaused = true;
 
-// Function to load settings from the filesystem into memory
+// Function to load the settings from storage into memory
 void loadSettings();
 
-// Function to load the images from the filesystem into memory
-void loadImages();
+// Function to load an image from storage into memory
+void loadImage(int storageSlot, int memorySlot);
 
 // Setup function
 void setup() {
@@ -50,10 +50,15 @@ void setup() {
     Wire.begin();
     mpu.begin();
     mpu.calcGyroOffsets();
-    // Initialize filesystem
+    // Initialize filesystem and memory
     LittleFS.begin();
     loadSettings();
-    loadImages();
+    if (displayMode < STORAGE_SLOT_COUNT) {
+        loadImage(displayMode, 0);
+    } else {
+        loadImage(displayMode - STORAGE_SLOT_COUNT, 0);
+        loadImage((displayMode - (STORAGE_SLOT_COUNT - 1)) % STORAGE_SLOT_COUNT, 1);
+    }
     // Initiliaze NeoPixels
     neopixels.begin();
     neopixels.setBrightness(brightness);
@@ -100,42 +105,60 @@ void setup() {
         }
         // Extract and store the received data
         if (hasSettingsArgs) {
-            File file = LittleFS.open("/data/settings.csv", "w");
-            file.print("Key:, Value:\n");
+            File file;
+            isReceiving = true;
+            neopixels.clear();
+            neopixels.show();
             brightness = server.arg("brightness").toInt();
             displayMode = server.arg("display-mode").toInt();
             animationInterval = server.arg("animation-interval").toInt();
             neopixels.setBrightness(brightness);
             neopixels.show();
-            if (displayMode < SLOT_COUNT) {
-                currentSlot = displayMode;
+            if (displayMode < STORAGE_SLOT_COUNT) {
+                loadImage(displayMode, currentMemorySlot);
+            } else {
+                loadImage(displayMode - STORAGE_SLOT_COUNT, 0);
+                loadImage((displayMode - (STORAGE_SLOT_COUNT - 1)) % STORAGE_SLOT_COUNT, 1);
             }
+            file = LittleFS.open("/data/settings.csv", "w");
+            file.print("Key:, Value:\n");
             file.print("brightness, " + String(brightness) + "\n");
             file.print("display-mode, " + String(displayMode) + "\n");
             file.print("animation-interval, " + String(animationInterval) + "\n");
             file.close();
+            isReceiving = false;
             server.send(200);
         } else if (hasImageArgs) {
-            int slot = server.arg("slot").toInt();
+            int storageSlot = server.arg("slot").toInt();
+            int memorySlot = -1;
             int angle = server.arg("angle").toInt();
-            String filename = "/data/image-" + String(slot) + ".csv";
+            String filename = "/data/image-" + String(storageSlot) + ".csv";
             File file;
             if (angle == 0) {
+                isReceiving = true;
                 neopixels.clear();
                 neopixels.show();
-                isReceiving = true;
                 file = LittleFS.open(filename, "w");
                 file.print("R:, G:, B:\n");
             } else {
                 file = LittleFS.open(filename, "a");
             }
+            if (storageSlot == displayMode) {
+                memorySlot = currentMemorySlot;
+            } else if (storageSlot == displayMode - STORAGE_SLOT_COUNT) {
+                memorySlot = 0;
+            } else if (storageSlot == (displayMode - (STORAGE_SLOT_COUNT - 1)) % STORAGE_SLOT_COUNT) {
+                memorySlot = 1;
+            }
             for (int i = 0; i < LED_COUNT; i++) {
                 byte r = server.arg("led-" + String(i) + "-r").toInt();
                 byte g = server.arg("led-" + String(i) + "-g").toInt();
                 byte b = server.arg("led-" + String(i) + "-b").toInt();
-                images[slot][(angle * LED_COUNT) + i][0] = r;
-                images[slot][(angle * LED_COUNT) + i][1] = g;
-                images[slot][(angle * LED_COUNT) + i][2] = b;
+                if (memorySlot != -1) {
+                    images[memorySlot][(angle * LED_COUNT) + i][0] = r;
+                    images[memorySlot][(angle * LED_COUNT) + i][1] = g;
+                    images[memorySlot][(angle * LED_COUNT) + i][2] = b;
+                }
                 file.print(String(r) + ", " + String(g) + ", " + String(b) + "\n");
             }
             file.close();
@@ -149,6 +172,12 @@ void setup() {
     });
     server.serveStatic("/data/image-0.csv", LittleFS, "/data/image-0.csv");
     server.serveStatic("/data/image-1.csv", LittleFS, "/data/image-1.csv");
+    server.serveStatic("/data/image-2.csv", LittleFS, "/data/image-2.csv");
+    server.serveStatic("/data/image-3.csv", LittleFS, "/data/image-3.csv");
+    server.serveStatic("/data/image-4.csv", LittleFS, "/data/image-4.csv");
+    server.serveStatic("/data/image-5.csv", LittleFS, "/data/image-5.csv");
+    server.serveStatic("/data/image-6.csv", LittleFS, "/data/image-6.csv");
+    server.serveStatic("/data/image-7.csv", LittleFS, "/data/image-7.csv");
     server.serveStatic("/data/settings.csv", LittleFS, "/data/settings.csv");
     server.serveStatic("/scripts/index.js", LittleFS, "/scripts/index.js");
     server.serveStatic("/styles/dark.min.css", LittleFS, "/styles/dark.min.css");
@@ -171,8 +200,8 @@ void loop() {
             if (isPaused) {
                 isPaused = false;
             }
-            if (displayMode == SLOT_COUNT && currentMicros - lastSlotChange > animationInterval) {
-                currentSlot = (currentSlot + 1) % SLOT_COUNT;
+            if (displayMode >= STORAGE_SLOT_COUNT && currentMicros - lastSlotChange > animationInterval) {
+                currentMemorySlot = (currentMemorySlot + 1) % 2;
                 lastSlotChange = currentMicros;
             }
             revolutionPeriod = currentMicros - lastRotation;
@@ -194,21 +223,21 @@ void loop() {
             // Display an angle of the image
             if (virtualAngle != lastVirtualAngle) {
                 for (int i = 0; i < LED_COUNT; i++) {
-                    byte r = images[currentSlot][(virtualAngle * LED_COUNT) + i][0];
-                    byte g = images[currentSlot][(virtualAngle * LED_COUNT) + i][1];
-                    byte b = images[currentSlot][(virtualAngle * LED_COUNT) + i][2];
+                    byte r = images[currentMemorySlot][(virtualAngle * LED_COUNT) + i][0];
+                    byte g = images[currentMemorySlot][(virtualAngle * LED_COUNT) + i][1];
+                    byte b = images[currentMemorySlot][(virtualAngle * LED_COUNT) + i][2];
                     neopixels.setPixelColor(i, neopixels.Color(r, g, b));
-                    r = images[currentSlot][(((virtualAngle + 90) % 360) * LED_COUNT) + i][0];
-                    g = images[currentSlot][(((virtualAngle + 90) % 360) * LED_COUNT) + i][1];
-                    b = images[currentSlot][(((virtualAngle + 90) % 360) * LED_COUNT) + i][2];
+                    r = images[currentMemorySlot][(((virtualAngle + 90) % 360) * LED_COUNT) + i][0];
+                    g = images[currentMemorySlot][(((virtualAngle + 90) % 360) * LED_COUNT) + i][1];
+                    b = images[currentMemorySlot][(((virtualAngle + 90) % 360) * LED_COUNT) + i][2];
                     neopixels.setPixelColor(i + LED_COUNT, neopixels.Color(r, g, b));
-                    r = images[currentSlot][(((virtualAngle + 180) % 360) * LED_COUNT) + i][0];
-                    g = images[currentSlot][(((virtualAngle + 180) % 360) * LED_COUNT) + i][1];
-                    b = images[currentSlot][(((virtualAngle + 180) % 360) * LED_COUNT) + i][2];
+                    r = images[currentMemorySlot][(((virtualAngle + 180) % 360) * LED_COUNT) + i][0];
+                    g = images[currentMemorySlot][(((virtualAngle + 180) % 360) * LED_COUNT) + i][1];
+                    b = images[currentMemorySlot][(((virtualAngle + 180) % 360) * LED_COUNT) + i][2];
                     neopixels.setPixelColor(i + (LED_COUNT * 2), neopixels.Color(r, g, b));
-                    r = images[currentSlot][(((virtualAngle + 270) % 360) * LED_COUNT) + i][0];
-                    g = images[currentSlot][(((virtualAngle + 270) % 360) * LED_COUNT) + i][1];
-                    b = images[currentSlot][(((virtualAngle + 270) % 360) * LED_COUNT) + i][2];
+                    r = images[currentMemorySlot][(((virtualAngle + 270) % 360) * LED_COUNT) + i][0];
+                    g = images[currentMemorySlot][(((virtualAngle + 270) % 360) * LED_COUNT) + i][1];
+                    b = images[currentMemorySlot][(((virtualAngle + 270) % 360) * LED_COUNT) + i][2];
                     neopixels.setPixelColor(i + (LED_COUNT * 3), neopixels.Color(r, g, b));
                 }
                 neopixels.show();
@@ -220,7 +249,7 @@ void loop() {
     server.handleClient();
 }
 
-// Function to load settings from the filesystem into memory
+// Function to load the settings from storage into memory
 void loadSettings() {
     File file = LittleFS.open("/data/settings.csv", "r");
     while (file.available()) {
@@ -232,9 +261,6 @@ void loadSettings() {
             brightness = value;
         } else if (key == "display-mode") {
             displayMode = value;
-            if (displayMode < SLOT_COUNT) {
-                currentSlot = displayMode;
-            }
         } else if (key == "animation-interval") {
             animationInterval = value;
         }
@@ -242,25 +268,31 @@ void loadSettings() {
     file.close();
 }
 
-// Function to load the images from the filesystem into memory
-void loadImages() {
-    for (int i = 0; i < SLOT_COUNT; i++) {
-        String filename = "/data/image-" + String(i) + ".csv";
-        File file = LittleFS.open(filename, "r");
-        for (int j = -1; j < 360 * LED_COUNT; j++) {
-            String line;
-            if (!file.available()) {
-                break;
-            }
-            line = file.readStringUntil('\n');
-            if (j > -1) {
-                images[i][j][0] = line.substring(0, line.indexOf(',')).toInt();
-                line.remove(0, line.indexOf(',') + 1);
-                images[i][j][1] = line.substring(0, line.indexOf(',')).toInt();
-                line.remove(0, line.indexOf(',') + 1);
-                images[i][j][2] = line.toInt();
-            }
-        }
-        file.close();
+// Function to load an image from storage into memory
+void loadImage(int storageSlot, int memorySlot) {
+    String filename = "/data/image-" + String(storageSlot) + ".csv";
+    File file;
+    // Clear the image
+    for (int i = 0; i < 360 * LED_COUNT; i++) {
+        images[memorySlot][i][0] = 0;
+        images[memorySlot][i][1] = 0;
+        images[memorySlot][i][2] = 0;
     }
+    // Load the new image
+    file = LittleFS.open(filename, "r");
+    for (int i = -1; i < 360 * LED_COUNT; i++) {
+        String line;
+        if (!file.available()) {
+            break;
+        }
+        line = file.readStringUntil('\n');
+        if (i > -1) {
+            images[memorySlot][i][0] = line.substring(0, line.indexOf(',')).toInt();
+            line.remove(0, line.indexOf(',') + 1);
+            images[memorySlot][i][1] = line.substring(0, line.indexOf(',')).toInt();
+            line.remove(0, line.indexOf(',') + 1);
+            images[memorySlot][i][2] = line.toInt();
+        }
+    }
+    file.close();
 }
