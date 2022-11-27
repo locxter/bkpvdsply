@@ -42,5 +42,5 @@ Below is a full bill of materials with German sources for all non-printable part
     - `Partition Scheme: No OTA (1MB APP/3MB SPIFFS)`
 2. Upload the additional files via the Arduino ESP32 LittleFS uploader.
 3. After turning on bkpvdsply, give the ESP roughly half a minute to boot up.
-4. Connect to the Wi-Fi network `bkpvdsply`, open any webpage (or `192.168.0.1` if the local DNS server doesn't work) and upload an image.
+4. Connect to the Wi-Fi network `bkpvdsply`, open any webpage (or `192.168.0.1` if the local DNS server doesn't work) and upload an image (examples are in the `images` folder).
 5. Then just hop on your bike and enjoy the glory of POV displays.
