@@ -127,7 +127,7 @@ originalImage.addEventListener('load', () => {
 });
 // Handle upload image button
 uploadImageButton.addEventListener('click', () => {
-    if (bkpvdsplyImage[0] !== undefined) {
+    if (bkpvdsplyImage[0][0] !== undefined) {
         slot = parseInt(slotInput.value);
         alert('Please be patient, the upload will take about 2 minutes.');
         uploadImage(slot, bkpvdsplyImage)
@@ -141,7 +141,6 @@ uploadImageButton.addEventListener('click', () => {
         alert('Please convert an image before uploading it.');
     }
 });
-
 // Handle save settings button
 saveSettingsButton.addEventListener('click', () => {
     brightness = parseInt(brightnessInput.value);
