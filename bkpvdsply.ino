@@ -87,85 +87,85 @@ void setup() {
     server.on("/", HTTP_POST, [&]() {
         // Check for necessary arguments
         bool hasSettingsArgs = server.hasArg("brightness") && server.hasArg("display-mode") && server.hasArg("animation-interval");
-    bool hasImageArgs = server.hasArg("slot") && server.hasArg("angle");
-    for (int i = 0; i < LED_COUNT; i++) {
-        if (!hasImageArgs) {
-            break;
+        bool hasImageArgs = server.hasArg("slot") && server.hasArg("angle");
+        for (int i = 0; i < LED_COUNT; i++) {
+            if (!hasImageArgs) {
+                break;
+            }
+            hasImageArgs = server.hasArg("led-" + String(i) + "-r");
         }
-        hasImageArgs = server.hasArg("led-" + String(i) + "-r");
-    }
-    for (int i = 0; i < LED_COUNT; i++) {
-        if (!hasImageArgs) {
-            break;
+        for (int i = 0; i < LED_COUNT; i++) {
+            if (!hasImageArgs) {
+                break;
+            }
+            hasImageArgs = server.hasArg("led-" + String(i) + "-g");
         }
-        hasImageArgs = server.hasArg("led-" + String(i) + "-g");
-    }
-    for (int i = 0; i < LED_COUNT; i++) {
-        if (!hasImageArgs) {
-            break;
+        for (int i = 0; i < LED_COUNT; i++) {
+            if (!hasImageArgs) {
+                break;
+            }
+            hasImageArgs = server.hasArg("led-" + String(i) + "-b");
         }
-        hasImageArgs = server.hasArg("led-" + String(i) + "-b");
-    }
-    // Extract and store the received data
-    if (hasSettingsArgs) {
-        isReceiving = true;
-        neopixels.clear();
-        neopixels.show();
-        brightness = server.arg("brightness").toInt();
-        displayMode = server.arg("display-mode").toInt();
-        animationInterval = server.arg("animation-interval").toInt();
-        neopixels.setBrightness(brightness);
-        neopixels.show();
-        if (displayMode < STORAGE_SLOT_COUNT) {
-            loadImage(displayMode, currentMemorySlot);
-        } else {
-            loadImage(displayMode - STORAGE_SLOT_COUNT, 0);
-            loadImage((displayMode - (STORAGE_SLOT_COUNT - 1)) % STORAGE_SLOT_COUNT, 1);
-        }
-        saveSettings();
-        isReceiving = false;
-        server.send(200);
-    } else if (hasImageArgs) {
-        int storageSlot = server.arg("slot").toInt();
-        int memorySlot = -1;
-        int angle = server.arg("angle").toInt();
-        String filename = "/data/image-" + String(storageSlot) + ".csv";
-        File file;
-        if (angle == 0) {
+        // Extract and store the received data
+        if (hasSettingsArgs) {
             isReceiving = true;
             neopixels.clear();
             neopixels.show();
-            file = LittleFS.open(filename, "w");
-            file.print("R:, G:, B:\n");
-        } else {
-            file = LittleFS.open(filename, "a");
-        }
-        if (storageSlot == displayMode) {
-            memorySlot = currentMemorySlot;
-        } else if (storageSlot == displayMode - STORAGE_SLOT_COUNT) {
-            memorySlot = 0;
-        } else if (storageSlot == (displayMode - (STORAGE_SLOT_COUNT - 1)) % STORAGE_SLOT_COUNT) {
-            memorySlot = 1;
-        }
-        for (int i = 0; i < LED_COUNT; i++) {
-            byte r = server.arg("led-" + String(i) + "-r").toInt();
-            byte g = server.arg("led-" + String(i) + "-g").toInt();
-            byte b = server.arg("led-" + String(i) + "-b").toInt();
-            if (memorySlot != -1) {
-                images[memorySlot][(angle * LED_COUNT) + i][0] = r;
-                images[memorySlot][(angle * LED_COUNT) + i][1] = g;
-                images[memorySlot][(angle * LED_COUNT) + i][2] = b;
+            brightness = server.arg("brightness").toInt();
+            displayMode = server.arg("display-mode").toInt();
+            animationInterval = server.arg("animation-interval").toInt();
+            neopixels.setBrightness(brightness);
+            neopixels.show();
+            if (displayMode < STORAGE_SLOT_COUNT) {
+                loadImage(displayMode, currentMemorySlot);
+            } else {
+                loadImage(displayMode - STORAGE_SLOT_COUNT, 0);
+                loadImage((displayMode - (STORAGE_SLOT_COUNT - 1)) % STORAGE_SLOT_COUNT, 1);
             }
-            file.print(String(r) + ", " + String(g) + ", " + String(b) + "\n");
-        }
-        file.close();
-        if (angle == 359) {
+            saveSettings();
             isReceiving = false;
+            server.send(200);
+        } else if (hasImageArgs) {
+            int storageSlot = server.arg("slot").toInt();
+            int memorySlot = -1;
+            int angle = server.arg("angle").toInt();
+            String filename = "/data/image-" + String(storageSlot) + ".csv";
+            File file;
+            if (angle == 0) {
+                isReceiving = true;
+                neopixels.clear();
+                neopixels.show();
+                file = LittleFS.open(filename, "w");
+                file.print("R:, G:, B:\n");
+            } else {
+                file = LittleFS.open(filename, "a");
+            }
+            if (storageSlot == displayMode) {
+                memorySlot = currentMemorySlot;
+            } else if (storageSlot == displayMode - STORAGE_SLOT_COUNT) {
+                memorySlot = 0;
+            } else if (storageSlot == (displayMode - (STORAGE_SLOT_COUNT - 1)) % STORAGE_SLOT_COUNT) {
+                memorySlot = 1;
+            }
+            for (int i = 0; i < LED_COUNT; i++) {
+                byte r = server.arg("led-" + String(i) + "-r").toInt();
+                byte g = server.arg("led-" + String(i) + "-g").toInt();
+                byte b = server.arg("led-" + String(i) + "-b").toInt();
+                if (memorySlot != -1) {
+                    images[memorySlot][(angle * LED_COUNT) + i][0] = r;
+                    images[memorySlot][(angle * LED_COUNT) + i][1] = g;
+                    images[memorySlot][(angle * LED_COUNT) + i][2] = b;
+                }
+                file.print(String(r) + ", " + String(g) + ", " + String(b) + "\n");
+            }
+            file.close();
+            if (angle == 359) {
+                isReceiving = false;
+            }
+            server.send(200);
+        } else {
+            server.send(404, "text/plain", "Invalid request");
         }
-        server.send(200);
-    } else {
-        server.send(404, "text/plain", "Invalid request");
-    }
     });
     server.serveStatic("/data/image-0.csv", LittleFS, "/data/image-0.csv");
     server.serveStatic("/data/image-1.csv", LittleFS, "/data/image-1.csv");
@@ -303,3 +303,4 @@ void loadImage(int storageSlot, int memorySlot) {
     }
     file.close();
 }
+
