@@ -38,10 +38,13 @@ int lastVirtualAngle = -1;
 bool isReceiving = false;
 bool isPaused = true;
 
-// Function to load the settings from storage into memory
+// Function to load the settings from storage into RAM
 void loadSettings();
 
-// Function to load an image from storage into memory
+// Function to save the settings from RAM into storage
+void saveSettings();
+
+// Function to load an image from storage into RAM
 void loadImage(int storageSlot, int memorySlot);
 
 // Setup function
@@ -74,101 +77,95 @@ void setup() {
     server.enableCORS(true);
     server.on("/", HTTP_GET, [&]() {
         File file = LittleFS.open("/index.html", "r");
-        String content;
-        while (file.available()) {
-            content += (char) file.read();
-        }
-        file.close();
-        server.send(200, "text/html", content);
+    String content;
+    while (file.available()) {
+        content += (char) file.read();
+    }
+    file.close();
+    server.send(200, "text/html", content);
     });
     server.on("/", HTTP_POST, [&]() {
         // Check for necessary arguments
         bool hasSettingsArgs = server.hasArg("brightness") && server.hasArg("display-mode") && server.hasArg("animation-interval");
-        bool hasImageArgs = server.hasArg("slot") && server.hasArg("angle");
-        for (int i = 0; i < LED_COUNT; i++) {
-            if (!hasImageArgs) {
-                break;
-            }
-            hasImageArgs = server.hasArg("led-" + String(i) + "-r");
+    bool hasImageArgs = server.hasArg("slot") && server.hasArg("angle");
+    for (int i = 0; i < LED_COUNT; i++) {
+        if (!hasImageArgs) {
+            break;
         }
-        for (int i = 0; i < LED_COUNT; i++) {
-            if (!hasImageArgs) {
-                break;
-            }
-            hasImageArgs = server.hasArg("led-" + String(i) + "-g");
+        hasImageArgs = server.hasArg("led-" + String(i) + "-r");
+    }
+    for (int i = 0; i < LED_COUNT; i++) {
+        if (!hasImageArgs) {
+            break;
         }
-        for (int i = 0; i < LED_COUNT; i++) {
-            if (!hasImageArgs) {
-                break;
-            }
-            hasImageArgs = server.hasArg("led-" + String(i) + "-b");
+        hasImageArgs = server.hasArg("led-" + String(i) + "-g");
+    }
+    for (int i = 0; i < LED_COUNT; i++) {
+        if (!hasImageArgs) {
+            break;
         }
-        // Extract and store the received data
-        if (hasSettingsArgs) {
-            File file;
+        hasImageArgs = server.hasArg("led-" + String(i) + "-b");
+    }
+    // Extract and store the received data
+    if (hasSettingsArgs) {
+        isReceiving = true;
+        neopixels.clear();
+        neopixels.show();
+        brightness = server.arg("brightness").toInt();
+        displayMode = server.arg("display-mode").toInt();
+        animationInterval = server.arg("animation-interval").toInt();
+        neopixels.setBrightness(brightness);
+        neopixels.show();
+        if (displayMode < STORAGE_SLOT_COUNT) {
+            loadImage(displayMode, currentMemorySlot);
+        } else {
+            loadImage(displayMode - STORAGE_SLOT_COUNT, 0);
+            loadImage((displayMode - (STORAGE_SLOT_COUNT - 1)) % STORAGE_SLOT_COUNT, 1);
+        }
+        saveSettings();
+        isReceiving = false;
+        server.send(200);
+    } else if (hasImageArgs) {
+        int storageSlot = server.arg("slot").toInt();
+        int memorySlot = -1;
+        int angle = server.arg("angle").toInt();
+        String filename = "/data/image-" + String(storageSlot) + ".csv";
+        File file;
+        if (angle == 0) {
             isReceiving = true;
             neopixels.clear();
             neopixels.show();
-            brightness = server.arg("brightness").toInt();
-            displayMode = server.arg("display-mode").toInt();
-            animationInterval = server.arg("animation-interval").toInt();
-            neopixels.setBrightness(brightness);
-            neopixels.show();
-            if (displayMode < STORAGE_SLOT_COUNT) {
-                loadImage(displayMode, currentMemorySlot);
-            } else {
-                loadImage(displayMode - STORAGE_SLOT_COUNT, 0);
-                loadImage((displayMode - (STORAGE_SLOT_COUNT - 1)) % STORAGE_SLOT_COUNT, 1);
-            }
-            file = LittleFS.open("/data/settings.csv", "w");
-            file.print("Key:, Value:\n");
-            file.print("brightness, " + String(brightness) + "\n");
-            file.print("display-mode, " + String(displayMode) + "\n");
-            file.print("animation-interval, " + String(animationInterval) + "\n");
-            file.close();
-            isReceiving = false;
-            server.send(200);
-        } else if (hasImageArgs) {
-            int storageSlot = server.arg("slot").toInt();
-            int memorySlot = -1;
-            int angle = server.arg("angle").toInt();
-            String filename = "/data/image-" + String(storageSlot) + ".csv";
-            File file;
-            if (angle == 0) {
-                isReceiving = true;
-                neopixels.clear();
-                neopixels.show();
-                file = LittleFS.open(filename, "w");
-                file.print("R:, G:, B:\n");
-            } else {
-                file = LittleFS.open(filename, "a");
-            }
-            if (storageSlot == displayMode) {
-                memorySlot = currentMemorySlot;
-            } else if (storageSlot == displayMode - STORAGE_SLOT_COUNT) {
-                memorySlot = 0;
-            } else if (storageSlot == (displayMode - (STORAGE_SLOT_COUNT - 1)) % STORAGE_SLOT_COUNT) {
-                memorySlot = 1;
-            }
-            for (int i = 0; i < LED_COUNT; i++) {
-                byte r = server.arg("led-" + String(i) + "-r").toInt();
-                byte g = server.arg("led-" + String(i) + "-g").toInt();
-                byte b = server.arg("led-" + String(i) + "-b").toInt();
-                if (memorySlot != -1) {
-                    images[memorySlot][(angle * LED_COUNT) + i][0] = r;
-                    images[memorySlot][(angle * LED_COUNT) + i][1] = g;
-                    images[memorySlot][(angle * LED_COUNT) + i][2] = b;
-                }
-                file.print(String(r) + ", " + String(g) + ", " + String(b) + "\n");
-            }
-            file.close();
-            if (angle == 359) {
-                isReceiving = false;
-            }
-            server.send(200);
+            file = LittleFS.open(filename, "w");
+            file.print("R:, G:, B:\n");
         } else {
-            server.send(404, "text/plain", "Invalid request");
+            file = LittleFS.open(filename, "a");
         }
+        if (storageSlot == displayMode) {
+            memorySlot = currentMemorySlot;
+        } else if (storageSlot == displayMode - STORAGE_SLOT_COUNT) {
+            memorySlot = 0;
+        } else if (storageSlot == (displayMode - (STORAGE_SLOT_COUNT - 1)) % STORAGE_SLOT_COUNT) {
+            memorySlot = 1;
+        }
+        for (int i = 0; i < LED_COUNT; i++) {
+            byte r = server.arg("led-" + String(i) + "-r").toInt();
+            byte g = server.arg("led-" + String(i) + "-g").toInt();
+            byte b = server.arg("led-" + String(i) + "-b").toInt();
+            if (memorySlot != -1) {
+                images[memorySlot][(angle * LED_COUNT) + i][0] = r;
+                images[memorySlot][(angle * LED_COUNT) + i][1] = g;
+                images[memorySlot][(angle * LED_COUNT) + i][2] = b;
+            }
+            file.print(String(r) + ", " + String(g) + ", " + String(b) + "\n");
+        }
+        file.close();
+        if (angle == 359) {
+            isReceiving = false;
+        }
+        server.send(200);
+    } else {
+        server.send(404, "text/plain", "Invalid request");
+    }
     });
     server.serveStatic("/data/image-0.csv", LittleFS, "/data/image-0.csv");
     server.serveStatic("/data/image-1.csv", LittleFS, "/data/image-1.csv");
@@ -249,13 +246,13 @@ void loop() {
     server.handleClient();
 }
 
-// Function to load the settings from storage into memory
+// Function to load the settings from storage into RAM
 void loadSettings() {
     File file = LittleFS.open("/data/settings.csv", "r");
     while (file.available()) {
         String line = file.readStringUntil('\n');
         String key = line.substring(0, line.indexOf(','));
-        line.remove(0, line.indexOf(',') + 1);
+        line.remove(0, line.indexOf(',') + 2);
         unsigned long value = line.toInt();
         if (key == "brightness") {
             brightness = value;
@@ -268,7 +265,17 @@ void loadSettings() {
     file.close();
 }
 
-// Function to load an image from storage into memory
+// Function to save the settings from RAM into storage
+void saveSettings() {
+    File file = LittleFS.open("/data/settings.csv", "w");
+    file.print("Key:, Value:\n");
+    file.print("brightness, " + String(brightness) + "\n");
+    file.print("display-mode, " + String(displayMode) + "\n");
+    file.print("animation-interval, " + String(animationInterval) + "\n");
+    file.close();
+}
+
+// Function to load an image from storage into RAM
 void loadImage(int storageSlot, int memorySlot) {
     String filename = "/data/image-" + String(storageSlot) + ".csv";
     File file;
