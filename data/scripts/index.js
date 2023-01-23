@@ -89,13 +89,13 @@ async function saveSettings(brightness, displayMode, animationInterval) {
 
 // Handle convert image button
 convertImageButton.addEventListener('click', () => {
-    if (imageInput.files[0]) {
+    if (internalWheelDiameterInput.value && internalWheelDiameterInput.value && imageInput.files[0]) {
         internalWheelDiameter = parseInt(internalWheelDiameterInput.value);
         hubDiameter = parseInt(hubDiameterInput.value);
         margin = ((internalWheelDiameter / 2) - (hubDiameter / 2) - LED_STRIP_LENGTH) / 2;
         originalImage.src = URL.createObjectURL(imageInput.files[0]);
     } else {
-        alert('Please select an image before converting it.');
+        alert('Please enter internal wheel/hub diameter and select an image before converting it.');
     }
 });
 // Handle image load
@@ -127,7 +127,7 @@ originalImage.addEventListener('load', () => {
 });
 // Handle upload image button
 uploadImageButton.addEventListener('click', () => {
-    if (bkpvdsplyImage[0][0] !== undefined) {
+    if (slotInput.value && bkpvdsplyImage[0][0]) {
         slot = parseInt(slotInput.value);
         alert('Please be patient, the upload will take about 2 minutes.');
         uploadImage(slot, bkpvdsplyImage)
@@ -138,19 +138,24 @@ uploadImageButton.addEventListener('click', () => {
                 alert(error);
             });
     } else {
-        alert('Please convert an image before uploading it.');
+        alert('Please select a slot and convert an image before uploading it.');
     }
 });
 // Handle save settings button
 saveSettingsButton.addEventListener('click', () => {
-    brightness = parseInt(brightnessInput.value);
-    displayMode = parseInt(displayModeInput.value);
-    animationInterval = parseInt(animationIntervalInput.value);
-    saveSettings(brightness, displayMode, animationInterval)
-        .then(() => {
-            alert('Settings successfully saved.');
-        })
-        .catch(error => {
-            alert(error);
-        });
+    if (brightnessInput.value && displayModeInput.value && animationIntervalInput.value) {
+        brightness = parseInt(brightnessInput.value);
+        displayMode = parseInt(displayModeInput.value);
+        animationInterval = parseInt(animationIntervalInput.value);
+        saveSettings(brightness, displayMode, animationInterval)
+            .then(() => {
+                alert('Settings successfully saved.');
+            })
+            .catch(error => {
+                alert(error);
+            });
+    } else {
+        alert('Please set a brightness, choose a display mode and enter an animation interval.');
+    }
+
 });
