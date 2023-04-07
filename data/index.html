@@ -2,11 +2,11 @@
 <html lang="en">
     <head>
         <title>bkpvdsply</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="author" content="locxter">
-        <meta name="description" content="This is a bike POV display using readily available parts.">
-        <link rel="stylesheet" href="styles/dark.min.css">
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="author" content="locxter" />
+        <meta name="description" content="This is a bike POV display using readily available parts." />
+        <link rel="stylesheet" href="styles/dark.min.css" />
     </head>
     <body>
         <noscript>
@@ -19,35 +19,35 @@
             <h2>Image upload</h2>
             <p>
                 <label for="internal-wheel-diameter">Internal wheel diameter in mm:</label>
-                <br>
-                <input id="internal-wheel-diameter" type="number" min="0" max="1000" value="600">
+                <br />
+                <input id="internal-wheel-diameter" type="number" min="0" max="1000" value="600" />
             </p>
             <p>
                 <label for="hub-diameter">Hub diameter in mm:</label>
-                <br>
-                <input id="hub-diameter" type="number" min="0" max="100" value="80">
+                <br />
+                <input id="hub-diameter" type="number" min="0" max="100" value="80" />
             </p>
             <p>
                 <label for="image">Image:</label>
-                <br>
-                <input id="image" type="file" accept="image/*">
+                <br />
+                <input id="image" type="file" accept="image/*" />
             </p>
             <p>
                 <button id="convert-image">Convert image</button>
             </p>
             <p>
                 Original image:
-                <br>
+                <br />
                 <canvas id="original-image"></canvas>
             </p>
             <p>
                 bkpvdsply image:
-                <br>
+                <br />
                 <canvas id="bkpvdsply-image"></canvas>
             </p>
             <p>
                 <label for="slot">Slot:</label>
-                <br>
+                <br />
                 <select id="slot">
                     <option value="0" selected>Slot 1</option>
                     <option value="1">Slot 2</option>
@@ -66,12 +66,12 @@
             <h2>Settings</h2>
             <p>
                 <label for="brightness">Brightness in %:</label>
-                <br>
-                <input id="brightness" type="number" min="0" max="100" value="50">
+                <br />
+                <input id="brightness" type="number" min="0" max="100" value="50" />
             </p>
             <p>
                 <label for="display-mode">Display mode:</label>
-                <br>
+                <br />
                 <select id="display-mode">
                     <option value="0" selected>Only show slot 1</option>
                     <option value="1">Only show slot 2</option>
@@ -93,8 +93,8 @@
             </p>
             <p>
                 <label for="animation-interval">Animation interval in ms:</label>
-                <br>
-                <input id="animation-interval" type="number" min="0" max="10000" value="1000">
+                <br />
+                <input id="animation-interval" type="number" min="0" max="10000" value="1000" />
             </p>
             <p>
                 <button id="save-settings">Save settings</button>

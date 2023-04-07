@@ -1,12 +1,12 @@
-#include <Wire.h>
-#include <MPU6050_tockn.h>
 #include <Adafruit_NeoPixel.h>
+#include <DNSServer.h>
 #include <LittleFS.h>
+#include <MPU6050_tockn.h>
+#include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include <WebServer.h>
+#include <Wire.h>
 #include <uri/UriBraces.h>
-#include <DNSServer.h>
 
 // LED and WiFi related constants
 const int NEOPIXELS_PIN = 5;
@@ -77,16 +77,17 @@ void setup() {
     server.enableCORS(true);
     server.on("/", HTTP_GET, [&]() {
         File file = LittleFS.open("/index.html", "r");
-    String content;
-    while (file.available()) {
-        content += (char) file.read();
-    }
-    file.close();
-    server.send(200, "text/html", content);
+        String content;
+        while (file.available()) {
+            content += (char) file.read();
+        }
+        file.close();
+        server.send(200, "text/html", content);
     });
     server.on("/", HTTP_POST, [&]() {
         // Check for necessary arguments
-        bool hasSettingsArgs = server.hasArg("brightness") && server.hasArg("display-mode") && server.hasArg("animation-interval");
+        bool hasSettingsArgs =
+            server.hasArg("brightness") && server.hasArg("display-mode") && server.hasArg("animation-interval");
         bool hasImageArgs = server.hasArg("slot") && server.hasArg("angle");
         for (int i = 0; i < LED_COUNT; i++) {
             if (!hasImageArgs) {
@@ -193,7 +194,8 @@ void loop() {
         angle = ((int) round(mpu.getAccAngleX()) + 360) % 360;
         currentMicros = micros();
         // Calculate revolution period and update other data on every rotation when the user is pedalling
-        if ((angle >= 353 || angle <= 7) && currentMicros - lastRotation >= 150000 && currentMicros - lastRotation <= 1500000) {
+        if ((angle >= 353 || angle <= 7) && currentMicros - lastRotation >= 150000 &&
+            currentMicros - lastRotation <= 1500000) {
             if (isPaused) {
                 isPaused = false;
             }
@@ -303,4 +305,3 @@ void loadImage(int storageSlot, int memorySlot) {
     }
     file.close();
 }
-

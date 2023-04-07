@@ -25,7 +25,7 @@ const LED_SPACING = LED_STRIP_LENGTH / LED_COUNT;
 // Other variables
 let internalWheelDiameter = 600;
 let hubDiameter = 80;
-let margin = ((internalWheelDiameter / 2) - (hubDiameter / 2) - LED_STRIP_LENGTH) / 2;
+let margin = (internalWheelDiameter / 2 - hubDiameter / 2 - LED_STRIP_LENGTH) / 2;
 let originalImage = new Image();
 let bkpvdsplyImage = new Array(360 * LED_COUNT);
 for (let i = 0; i < bkpvdsplyImage.length; i++) {
@@ -45,13 +45,13 @@ async function uploadImage(slot, image) {
         data.append('slot', slot);
         data.append('angle', i);
         for (let j = 0; j < LED_COUNT; j++) {
-            data.append('led-' + j + '-r', image[(i * LED_COUNT) + j][0]);
-            data.append('led-' + j + '-g', image[(i * LED_COUNT) + j][1]);
-            data.append('led-' + j + '-b', image[(i * LED_COUNT) + j][2]);
+            data.append('led-' + j + '-r', image[i * LED_COUNT + j][0]);
+            data.append('led-' + j + '-g', image[i * LED_COUNT + j][1]);
+            data.append('led-' + j + '-b', image[i * LED_COUNT + j][2]);
         }
         response = await fetch('http://192.168.0.1', {
             method: 'POST',
-            body: data
+            body: data,
         });
         responseText = await response.text();
         if (response.ok) {
@@ -77,7 +77,7 @@ async function saveSettings(brightness, displayMode, animationInterval) {
     data.append('animation-interval', animationInterval * 1000);
     response = await fetch('http://192.168.0.1', {
         method: 'POST',
-        body: data
+        body: data,
     });
     responseText = await response.text();
     if (response.ok) {
@@ -92,7 +92,7 @@ convertImageButton.addEventListener('click', () => {
     if (internalWheelDiameterInput.value && internalWheelDiameterInput.value && imageInput.files[0]) {
         internalWheelDiameter = parseInt(internalWheelDiameterInput.value);
         hubDiameter = parseInt(hubDiameterInput.value);
-        margin = ((internalWheelDiameter / 2) - (hubDiameter / 2) - LED_STRIP_LENGTH) / 2;
+        margin = (internalWheelDiameter / 2 - hubDiameter / 2 - LED_STRIP_LENGTH) / 2;
         originalImage.src = URL.createObjectURL(imageInput.files[0]);
     } else {
         alert('Please enter internal wheel/hub diameter and select an image before converting it.');
@@ -113,14 +113,20 @@ originalImage.addEventListener('load', () => {
     // Draw bkpvdsply image and store the data for upload
     for (let i = 0; i < 360; i++) {
         for (let j = 0; j < LED_COUNT; j++) {
-            let x = Math.round((internalWheelDiameter / 2) + (((hubDiameter / 2) + margin + (LED_SPACING / 2) + (j * LED_SPACING)) * Math.sin(i * (Math.PI / 180.0))));
-            let y = Math.round((internalWheelDiameter / 2) + (((hubDiameter / 2) + margin + (LED_SPACING / 2) + (j * LED_SPACING)) * Math.cos(i * (Math.PI / 180.0))));
+            let x = Math.round(
+                internalWheelDiameter / 2 +
+                    (hubDiameter / 2 + margin + LED_SPACING / 2 + j * LED_SPACING) * Math.sin(i * (Math.PI / 180.0))
+            );
+            let y = Math.round(
+                internalWheelDiameter / 2 +
+                    (hubDiameter / 2 + margin + LED_SPACING / 2 + j * LED_SPACING) * Math.cos(i * (Math.PI / 180.0))
+            );
             let pixel = originalImageContext.getImageData(x, internalWheelDiameter - y, 1, 1);
             pixel.data[3] = 255;
             bkpvdsplyImageContext.putImageData(pixel, x, internalWheelDiameter - y);
-            bkpvdsplyImage[(i * LED_COUNT) + j][0] = pixel.data[0];
-            bkpvdsplyImage[(i * LED_COUNT) + j][1] = pixel.data[1];
-            bkpvdsplyImage[(i * LED_COUNT) + j][2] = pixel.data[2];
+            bkpvdsplyImage[i * LED_COUNT + j][0] = pixel.data[0];
+            bkpvdsplyImage[i * LED_COUNT + j][1] = pixel.data[1];
+            bkpvdsplyImage[i * LED_COUNT + j][2] = pixel.data[2];
         }
     }
     URL.revokeObjectURL(this.src);
@@ -134,7 +140,7 @@ uploadImageButton.addEventListener('click', () => {
             .then(() => {
                 alert('Image successfully uploaded.');
             })
-            .catch(error => {
+            .catch((error) => {
                 alert(error);
             });
     } else {
@@ -151,11 +157,10 @@ saveSettingsButton.addEventListener('click', () => {
             .then(() => {
                 alert('Settings successfully saved.');
             })
-            .catch(error => {
+            .catch((error) => {
                 alert(error);
             });
     } else {
         alert('Please set a brightness, choose a display mode and enter an animation interval.');
     }
-
 });
