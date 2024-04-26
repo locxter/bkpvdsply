@@ -17,11 +17,13 @@ I generally try to minimize dependencies, but I'm a one man crew and can therefo
 
 ## How to build it
 
-This project is relatively straight forward as it mainly consists of an ESP32, an LED strip that's slit into four segments, a MPU-6050 and an USB power bank all housed in 3D printed enclosures and mounted with cable ties. For inspiration take a look at the mounting and assembly image down below.
+This project is relatively straight forward as it mainly consists of an ESP32, an LED strip that's slit into four segments, a MPU-6050 and an USB power bank all housed in 3D printed enclosures and mounted with cable ties. For inspiration take a look at the mounting and assembly image as well as wiring diagram down below:
 
 ![Mounting image](mounting.png)
 
 ![Assembly image](cad/assembly.png)
+
+![Wiring diagram](wiring.png)
 
 Below is a full bill of materials with German sources for all non-printable parts:
 
